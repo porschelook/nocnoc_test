@@ -66,12 +66,7 @@ export class HomePage {
         // expect(await this.page.getByText('กรอกเบอร์โทรศัพท์หรืออีเมลที่ถูกต้อง').isVisible());
         await this.page.screenshot({ path: 'A.png' });
         // await expect( this.page.locator(this.inputPhoneOrEmail)).toHaveClass('form-control is-invalid');
-        expect( await this.page.getByAltText('ยืนยันเบอร์มือถือ').isVisible());
-
-
         
-        // expect(await this.page.getByText('ยืนยันเบอร์มือถือ').isVisible());
-// class="form-control is-invalid
      
 
 

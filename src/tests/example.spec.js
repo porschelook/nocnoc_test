@@ -1,87 +1,112 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 const { HomePage } = require('../pages/home.page');
+const { ProductPage } = require('../pages/product.page');
+
 const Urlhome = 'https://nocnoc.com/';
-const UrlProductPage = 'https://nocnoc.com/';
-// test('has title', async ({ page }) => {
-//   await page.goto(Urlhome);
+const UrlProductPage = 'https://nocnoc.com/p/Televisions/LG-4K-Smart-TV-webOS-%E0%B8%A3%E0%B8%B8%E0%B9%88%E0%B8%99-55UQ/12290669';
+test('has title', async ({ page }) => {
+  await page.goto(Urlhome);
 
-//   await expect(page).toHaveTitle(/NocNoc/);
-// });
+  await expect(page).toHaveTitle(/NocNoc/);
+});
 
-test('TestCase-(001,005,006)(Login Button)', async ({ page }) => {
-  // await page.goto(Urlhome);
-  // await page.getByTestId('login-btn').click();
+[{ input: '0981231232' }, { input: 'porschelook@gmail.com' }].forEach(({ input }) => {
+  test(`TestCase-(001,005,006) - Login with input: ${input}`, async ({ page }) => {
+    const homePage = new HomePage(page);
+    await homePage.goto();
+    await homePage.checkLogin();    
+    await homePage.login("0981231232");
+    expect(await page.getByAltText('ยืนยันเบอร์มือถือ').isVisible()).toBeTruthy();
+  });
+});
 
-  // await expect(page.getByTestId( 'email-phone' )).toBeVisible();
 
+[{ input: 'Alice' }, { input: '123' }, { input: 'nocnoc@m' }, { input: '%*&' }, { input: '097775a778' }].forEach(({ input }) => {
+ test(`TestCase-007(Incorrect-Input) - Login with input: ${input}`, async ({ page }) => {
   const homePage = new HomePage(page);
   await homePage.goto();
   await homePage.checkLogin();
   await homePage.login('123123123')
+  expect( await page.getByAltText('กรอกเบอร์โทรศัพท์หรืออีเมลที่ถูกต้อง').isVisible());
 
-  // await homePage.fillPhoneNumber('123456789');
-  // await expect(page.getByTestId( 'email-phone' )).toBeVisible();
 
  });
+});
 
- test('TestCase-007(Incorrect-Input)', async ({ page }) => {
-  // await page.goto(Urlhome);
-  // await page.getByTestId('login-btn').click();
 
-  // await expect(page.getByTestId( 'email-phone' )).toBeVisible();
-
+test('TestCase-002(Cart Button)', async ({ page }) => {
   const homePage = new HomePage(page);
   await homePage.goto();
-  await homePage.checkLogin();
-  await homePage.login('123123123')
+  homePage.checkCart();
+  await expect(page).toHaveURL('https://nocnoc.com/cart?area=nav&entryPoint=Navigation%20Bar');
+});
 
-  // await homePage.fillPhoneNumber('123456789');
-  // await expect(page.getByTestId( 'email-phone' )).toBeVisible();
-
- });
-
-// test('TestCase-002(Cart Button)', async ({ page }) => {
-//   const homePage = new HomePage(page);
-//   await homePage.goto();
-//   homePage.checkCart();
-//   await expect(page).toHaveURL('https://nocnoc.com/cart?area=nav&entryPoint=Navigation%20Bar');
-// });
-
-// test('TestCase-003(External Links)', async ({ page }) => {
-//   // const homePage = new HomePage(page);
-//   // await homePage.goto();
-//   await page.goto(Urlhome);
-//   const BtnHelp = 'help';
+test('TestCase-003(External Links)', async ({ page }) => {
+  await page.goto(Urlhome);
+  const BtnHelp = 'help';
    
-//   const [newPage] = await Promise.all([
-//     page.waitForEvent('popup'),
-//     page.getByTestId(BtnHelp).click(),
+  const [newPage] = await Promise.all([
+    page.waitForEvent('popup'),
+    page.getByTestId(BtnHelp).click(),
      
-// ])
+])
  
-// await expect(newPage).toHaveURL('https://support.nocnoc.com/hc/th');
+await expect(newPage).toHaveURL('https://support.nocnoc.com/hc/th');
  
-// });
+});
 
-// // test('TestCase-004(TH/ENG)', async ({ page }) => {
-// //   const homePage = new HomePage(page);
-// //   await homePage.goto();
-// //   homePage.checkLanguage();
-  
-// //   await expect(page.getByText('Recommended for You')).toBeVisible();
-
-// //   });
+test('TestCase-004 (TH/ENG)', async ({ page }) => {
+  const homePage = new HomePage(page);
+  await homePage.goto();
+  await homePage.checkLanguage();
+  await expect(page.getByText('Recommended for You')).toBeVisible();
+});
 
 
-// [
-//   { name: 'Alice', expected: 'Hello, Alice!' },
-//   { name: 'Bob', expected: 'Hello, Bob!' },
-//   { name: 'Charlie', expected: 'Hello, Charlie!' },
-// ].forEach(({ name, expected }) => {
-//   // You can also do it with test.describe() or with multiple tests as long the test name is unique.
-//   test(`testing with ${name}`, async ({ page }) => {
-//     await page.goto(`https://example.com/greet?name=${name}`);
-//     await expect(page.getByRole('heading')).toHaveText(expected);
-//   });
-// });
+ 
+
+UrlProductPage
+test('TestCase-009(Cart Page - Increase Item Count)', async ({ page }) => {
+  const productPage = new ProductPage(page);
+
+  await productPage.goto();
+
+  let check = await productPage.checkPlusDisable();
+  while (check == true) {
+    await productPage.IncreaseItems();
+    check = await productPage.checkPlusDisable(); 
+  }
+
+  await productPage.checkTrueValue();
+
+  await productPage.checkValueNoMoreThanStocks();
+});
+
+
+UrlProductPage
+test('TestCase-010(Cart Page - Decrease Item Count)', async ({ page }) => {
+  const productPage = new ProductPage(page);
+
+  await productPage.goto();
+
+  let check = await productPage.checkMinusDisable();
+  while (check == false) {
+    await productPage.DecreaseItems();
+    check = await productPage.checkMinusDisable(); 
+  }
+
+  await productPage.checkTrueValue();
+
+  await productPage.checkValueNoLessThanMinimum();
+});
+
+test('TestCase-008(Cart Page - WishList)', async ({ page }) => {
+  const productPage = new ProductPage(page);
+
+  await productPage.goto();
+  // await productPage.checkWishList();
+  await productPage.checkRating();
+   
+ });
+
